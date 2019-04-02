@@ -1,0 +1,45 @@
+# 题意：N个小朋友有排名，且不按顺序站立，要求给小朋友发糖，满足：1. 每位小朋友至少有一个糖；2. 如果小朋友排名比他左右高，那么糖要高于他们；（相等的话没有要求）
+There are N children standing in a line. Each child is assigned a rating value.
+
+You are giving candies to these children subjected to the following requirements:
+
+Each child must have at least one candy.
+Children with a higher rating get more candies than their neighbors.
+What is the minimum candies you must give?
+
+解法1：
+将n数组初始化为1，首先向右遍历，如果排名比左边高则加1，否则保持1；然后向左扫描，如果比右边高，则加1；最后返回数组和即可。
+class Solution {
+public:
+    int candy(vector<int>& ratings) {
+        int res = 0, n = ratings.size();
+        vector<int> nums(n, 1);
+        for (int i = 0; i < n - 1; ++i) {
+            if (ratings[i + 1] > ratings[i]) nums[i + 1] = nums[i] + 1;
+        }
+        for (int i = n - 1; i > 0; --i) {
+            if (ratings[i - 1] > ratings[i]) nums[i - 1] = max(nums[i - 1], nums[i] + 1);
+        }
+        for (int num : nums) res += num;
+        return res;
+    }
+};
+解法2：dp深度搜索
+class Solution {
+    vector<int> dp;
+    int min_candy(int k,vector<int>& ratings){
+        dp[k]=1;
+        if(k>0 && ratings[k]>ratings[k-1]) dp[k] = max(dp[k],(dp[k-1]>0?dp[k-1]:min_candy(k-1,ratings))+1);
+        if(k<ratings.size()-1 && ratings[k]>ratings[k+1]) dp[k] = max(dp[k],(dp[k+1]>0?dp[k+1]:min_candy(k+1,ratings))+1);
+        return dp[k];
+    }
+public:
+    int candy(vector<int>& ratings) {
+        if(ratings.empty()) return 0;
+        dp.assign(ratings.size(),0);
+        int sum = 0;
+        for(int i=0;i<ratings.size();i++) sum += dp[i]>0?dp[i]:min_candy(i,ratings);
+        return sum;
+    }
+};
+
